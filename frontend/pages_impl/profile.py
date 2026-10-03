@@ -1,7 +1,13 @@
 """Page : Mon Profil — modifier infos, changer mot de passe, uploader avatar."""
+import os
 import streamlit as st
 import requests
 from api_client import get_client, BACKEND_URL
+
+PUBLIC_BACKEND_URL = os.getenv(
+    "PUBLIC_BACKEND_URL",
+    "https://survey-pilot-ai.onrender.com"
+)
 
 
 def _upload_avatar(token: str, file_bytes, filename: str, content_type: str):
@@ -38,7 +44,7 @@ def render():
     with col_avatar:
         avatar_url = me.get("avatar_url")
         if avatar_url:
-            full_url = avatar_url.replace("/static/", "http://localhost:8000/static/")
+            full_url = f"{PUBLIC_BACKEND_URL}{avatar_url}"
             st.image(full_url, width=150, caption="Photo actuelle")
         else:
             st.markdown(

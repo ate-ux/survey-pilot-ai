@@ -1,5 +1,8 @@
+import os
 import streamlit as st
 from api_client import get_client
+
+PUBLIC_BACKEND_URL = os.getenv("PUBLIC_BACKEND_URL", "https://survey-pilot-ai.onrender.com")
 
 st.set_page_config(
     page_title="SurveyPilot AI V2",
@@ -78,7 +81,7 @@ def sidebar():
         # Avatar si présent
         avatar_url = user.get("avatar_url")
         if avatar_url:
-            full_url = avatar_url.replace("/static/", "http://localhost:8000/static/")
+            full_url = f"{PUBLIC_BACKEND_URL}{avatar_url}"
             try:
                 st.image(full_url, width=60)
             except Exception:
