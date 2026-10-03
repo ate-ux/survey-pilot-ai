@@ -33,3 +33,5 @@ Thumbs.db
 *.sqlite3
 *.pdf
 *.zip
+body.json
+token.txt

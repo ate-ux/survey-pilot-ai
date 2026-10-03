@@ -1,22 +1,55 @@
 import streamlit as st
-import requests
-import pandas as pd
-import numpy as np
-import os
+from api_client import get_client
 
 st.set_page_config(
     page_title="SurveyPilot AI V2",
+    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
+# --- Initialisation de la session ---
+if "token" not in st.session_state:
+    st.session_state.token = None
+if "user" not in st.session_state:
+    st.session_state.user = None
 
-# --- Sidebar ---
-st.sidebar.title("SurveyPilot AI - V2")
-st.sidebar.markdown("**Aller à :**")
+client = get_client()
 
-modules = [
+
+# ============================================================
+# 1. ÉCRAN DE LOGIN
+# ============================================================
+def login_screen():
+    st.title("📊 SurveyPilot AI V2")
+    st.caption("Plateforme d'enquêtes statistiques multi-projets")
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("### 🔐 Connexion")
+        with st.form("login_form"):
+            username = st.text_input("Nom d'utilisateur", value="admin")
+            password = st.text_input("Mot de passe", type="password", value="admin123")
+            submitted = st.form_submit_button("Connexion", use_container_width=True)
+
+        if submitted:
+            data, err = client.login(username, password)
+            if err:
+                st.error(f"❌ Échec de connexion : {err}")
+            else:
+                st.session_state.token = data["access_token"]
+                me, _ = client.me()
+                st.session_state.user = me
+                st.success("✅ Connexion réussie")
+                st.rerun()
+
+        st.info("💡 **Démo** : `admin` / `admin123`")
+
+
+# ============================================================
+# 2. NAVIGATION
+# ============================================================
+MODULES = [
     "Dashboard Super Admin",
     "Projets",
     "Orchestrateur IA",
@@ -25,89 +58,106 @@ modules = [
     "Supervision Enquêteurs",
     "Données & Anomalies (CAP)",
     "Analyse Statistique",
+    "Machine Learning",
     "Sandbox",
     "Approbations",
+    "Mon Profil",
+    "Utilisateurs",
 ]
-choix = st.sidebar.radio("Navigation", modules, label_visibility="collapsed")
 
-st.title("SurveyPilot AI - V2")
 
-# --- Dashboard ---
-if choix == "Dashboard Super Admin":
-    st.subheader("👑 Dashboard Super Admin")
-    st.caption("Vue consolidée de l'ensemble de la plateforme SurveyPilot AI.")
+def sidebar():
+    with st.sidebar:
+        st.title("SurveyPilot AI - V2")
+        st.markdown("**Aller à :**")
+        choix = st.radio("Navigation", MODULES, label_visibility="collapsed")
 
-    try:
-        kpis = requests.get(f"{BACKEND_URL}/api/dashboard/kpis", timeout=5).json()
-    except Exception:
-        kpis = {
-            "projets_actifs": 0,
-            "enquetes_en_cours": 0,
-            "enqueteurs_deployes": 0,
-            "donnees_collectees": 0,
-        }
+        st.markdown("---")
+        user = st.session_state.user or {}
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Projets Actifs", kpis["projets_actifs"])
-    c2.metric("Enquêtes en cours", kpis["enquetes_en_cours"])
-    c3.metric("Enquêteurs déployés", kpis["enqueteurs_deployes"])
-    c4.metric("Données collectées", f"{kpis['donnees_collectees']:,}")
+        # Avatar si présent
+        avatar_url = user.get("avatar_url")
+        if avatar_url:
+            full_url = avatar_url.replace("/static/", "http://localhost:8000/static/")
+            try:
+                st.image(full_url, width=60)
+            except Exception:
+                pass
 
-    st.markdown("### Progression de la Collecte (7 derniers jours)")
+        st.caption(f"👤 **{user.get('full_name') or user.get('username', 'inconnu')}**")
+        st.caption(f"@{user.get('username', '')}")
+        st.caption(f"📧 {user.get('email', '')}")
 
-    # Simulation locale (corrige le bug numpy du PDF)
-    df = pd.DataFrame(
-        {
-            "Jour": pd.date_range(end=pd.Timestamp.today(), periods=7),
-            "Collectes": np.random.randint(100, 500, size=7),
-        }
-    ).set_index("Jour")
+        if st.button("🚪 Déconnexion", use_container_width=True):
+            st.session_state.token = None
+            st.session_state.user = None
+            st.rerun()
 
-    st.line_chart(df)
+        return choix
 
-# --- Projets ---
-elif choix == "Projets":
-    st.subheader("📁 Projets")
-    try:
-        data = requests.get(f"{BACKEND_URL}/api/projects", timeout=5).json()
-        st.dataframe(pd.DataFrame(data["projects"]))
-    except Exception as e:
-        st.error(f"Backend indisponible : {e}")
 
-# --- Analyse Statistique ---
-elif choix == "Analyse Statistique":
-    st.subheader("📊 Analyse Statistique & Reporting")
-    st.caption("Exécutez des analyses statistiques sur les données collectées (simulation locale).")
+# ============================================================
+# 3. ROUTAGE
+# ============================================================
+def main():
+    if not st.session_state.token:
+        login_screen()
+        return
 
-    onglet1, onglet2, onglet3 = st.tabs(
-        ["Statistiques Descriptives", "Analyse Bivariée", "Régression"]
-    )
+    choix = sidebar()
 
-    with onglet1:
-        st.markdown("#### Analyse Univariate")
-        variables = st.multiselect(
-            "Sélectionnez les variables",
-            ["age", "genre", "region", "revenu"],
-            default=["age", "genre"],
-        )
-        if st.button("Lancer l'analyse descriptive"):
-            df = pd.DataFrame(
-                np.random.randint(18, 70, size=(100, len(variables))),
-                columns=variables,
-            )
-            st.dataframe(df.describe())
-            st.bar_chart(df.mean())
+    if choix == "Dashboard Super Admin":
+        from pages_impl import dashboard
+        dashboard.render()
 
-    with onglet2:
-        st.info("Analyse bivariée — à venir.")
+    elif choix == "Projets":
+        from pages_impl import projects
+        projects.render()
 
-    with onglet3:
-        st.info("Modèles de régression — à venir.")
+    elif choix == "Orchestrateur IA":
+        from pages_impl import orchestrator
+        orchestrator.render()
 
-# --- Autres modules (placeholders) ---
-else:
-    st.subheader(f"🧩 {choix}")
-    st.info("Module en cours de développement.")
+    elif choix == "Base de Connaissances":
+        from pages_impl import knowledge
+        knowledge.render()
 
-st.sidebar.markdown("---")
-st.sidebar.caption(f"Backend : {BACKEND_URL}")
+    elif choix == "Échantillonnage":
+        from pages_impl import sampling
+        sampling.render()
+
+    elif choix == "Supervision Enquêteurs":
+        from pages_impl import interviewers
+        interviewers.render()
+
+    elif choix == "Données & Anomalies (CAP)":
+        from pages_impl import cap
+        cap.render()
+
+    elif choix == "Analyse Statistique":
+        from pages_impl import analysis_page
+        analysis_page.render()
+
+    elif choix == "Machine Learning":
+        from pages_impl import ml_page
+        ml_page.render()
+
+    elif choix == "Sandbox":
+        from pages_impl import sandbox
+        sandbox.render()
+
+    elif choix == "Approbations":
+        from pages_impl import approvals
+        approvals.render()
+
+    elif choix == "Mon Profil":
+        from pages_impl import profile as profile_page
+        profile_page.render()
+
+    elif choix == "Utilisateurs":
+        from pages_impl import users_admin
+        users_admin.render()
+
+
+if __name__ == "__main__":
+    main()
