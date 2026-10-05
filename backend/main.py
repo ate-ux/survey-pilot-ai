@@ -29,6 +29,8 @@ from routers import profile as profile_router
 from routers import ml as ml_router
 from routers import geo as geo_router
 from routers import llm as llm_router
+from routers import forms as forms_router
+from routers import import_export as io_router
 
 app = FastAPI(
     title=os.getenv("APP_NAME", "SurveyPilot AI"),
@@ -81,6 +83,8 @@ app.include_router(knowledge_router.router)
 app.include_router(ml_router.router)
 app.include_router(geo_router.router)
 app.include_router(llm_router.router)
+app.include_router(forms_router.router)
+app.include_router(io_router.router)
 
 
 @app.get("/")

@@ -112,6 +112,22 @@ class APIClient:
                           headers=self._headers(), timeout=TIMEOUT)
         return self._handle(r)
 
+    def update_question(self, question_id: int, data: dict):
+        r = requests.patch(f"{self.base_url}/api/questions/{question_id}",
+                          json=data, headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    def delete_question(self, question_id: int):
+        r = requests.delete(f"{self.base_url}/api/questions/{question_id}",
+                            headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    def bulk_create_questions(self, survey_id: int, questions: list):
+        r = requests.post(f"{self.base_url}/api/questions/bulk",
+                          params={"survey_id": survey_id},
+                          json=questions, headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
     # ---------------- Responses ----------------
     def list_responses(self, survey_id: int = None):
         params = {"survey_id": survey_id} if survey_id else {}
@@ -323,6 +339,24 @@ class APIClient:
         r = requests.get(f"{self.base_url}/api/ml/profile/{survey_id}",
                          headers=self._headers(), timeout=TIMEOUT)
         return self._handle(r)
+
+    # ---------------- Forms ----------------
+    def get_survey_form(self, survey_id):
+        r = requests.get(f"{self.base_url}/api/forms/survey/{survey_id}",
+                         headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    def submit_full_response(self, payload):
+        r = requests.post(f"{self.base_url}/api/forms/response/submit",
+                          json=payload,
+                          headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    def get_survey_completion(self, survey_id):
+        r = requests.get(f"{self.base_url}/api/forms/survey/{survey_id}/completion",
+                         headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
     # ---------------- Géo ----------------
     def get_map_data(self, survey_id=None):
         params = {"survey_id": survey_id} if survey_id else {}

@@ -62,12 +62,15 @@ MODULES = [
     "Données & Anomalies (CAP)",
     "Analyse Statistique",
     "Machine Learning",
+    "Import/Export",
     "Carte Interactive",
     "Recommandations IA",
+    "Saisir une Réponse",
     "Sandbox",
     "Approbations",
     "Mon Profil",
     "Utilisateurs",
+    "Questionnaire",
 ]
 
 
@@ -147,6 +150,10 @@ def main():
         from pages_impl import ml_page
         ml_page.render()
 
+    elif choix == "Import/Export":
+        from pages_impl import io_page
+        io_page.render()
+
     elif choix == "Carte Interactive":
         from pages_impl import map_page
         map_page.render()
@@ -154,6 +161,10 @@ def main():
     elif choix == "Recommandations IA":
         from pages_impl import llm_page
         llm_page.render()
+
+    elif choix == "Saisir une Réponse":
+        from pages_impl import form_page
+        form_page.render()
 
     elif choix == "Sandbox":
         from pages_impl import sandbox
@@ -170,6 +181,10 @@ def main():
     elif choix == "Utilisateurs":
         from pages_impl import users_admin
         users_admin.render()
+
+    elif choix == "Questionnaire":
+        from pages_impl import questionnaire_page
+        questionnaire_page.render()
 
 
 if __name__ == "__main__":

@@ -13,3 +13,8 @@ numpy
 scipy
 scikit-learn
 groq
+pandas
+openpyxl
+python-docx
+pypdf
+reportlab
