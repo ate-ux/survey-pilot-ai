@@ -323,6 +323,53 @@ class APIClient:
         r = requests.get(f"{self.base_url}/api/ml/profile/{survey_id}",
                          headers=self._headers(), timeout=TIMEOUT)
         return self._handle(r)
+    # ---------------- Géo ----------------
+    def get_map_data(self, survey_id=None):
+        params = {"survey_id": survey_id} if survey_id else {}
+        r = requests.get(f"{self.base_url}/api/geo/map-data", params=params,
+                         headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    def get_geo_zones(self, zone_type=None):
+        params = {"zone_type": zone_type} if zone_type else {}
+        r = requests.get(f"{self.base_url}/api/geo/zones", params=params,
+                         headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    def create_geo_zone(self, name, zone_type, center_lat, center_lon):
+        r = requests.post(f"{self.base_url}/api/geo/zones",
+                          json={"name": name, "zone_type": zone_type,
+                                "center_lat": center_lat, "center_lon": center_lon},
+                          headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    def get_geo_stats(self, survey_id=None):
+        params = {"survey_id": survey_id} if survey_id else {}
+        r = requests.get(f"{self.base_url}/api/geo/stats", params=params,
+                         headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    # ---------------- LLM ----------------
+    def get_llm_status(self):
+        r = requests.get(f"{self.base_url}/api/llm/status",
+                         headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    def get_llm_recommendations(self, survey_id):
+        r = requests.post(f"{self.base_url}/api/llm/recommend/{survey_id}",
+                          headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    def get_llm_interpretation(self, survey_id):
+        r = requests.post(f"{self.base_url}/api/llm/interpret/{survey_id}",
+                          headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
+
+    def list_llm_recommendations(self, survey_id=None):
+        params = {"survey_id": survey_id} if survey_id else {}
+        r = requests.get(f"{self.base_url}/api/llm/recommendations", params=params,
+                         headers=self._headers(), timeout=TIMEOUT)
+        return self._handle(r)
 
 
 @st.cache_resource

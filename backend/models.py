@@ -129,6 +129,10 @@ class Response(Base):
     status = Column(String(30), default="collected")
     collected_at = Column(DateTime, server_default=func.now())
     environment_id = Column(Integer, ForeignKey("environments.id"))
+    latitude = Column(Numeric(10, 7))
+    longitude = Column(Numeric(10, 7))
+    gps_accuracy = Column(Numeric(6, 2))
+    collected_at_gps = Column(DateTime)
 
 
 class Answer(Base):
@@ -225,3 +229,38 @@ class KnowledgeEntry(Base):
     created_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now())
+
+
+# ============================================================
+# V2.1 - Géolocalisation
+# ============================================================
+
+class GeoZone(Base):
+    __tablename__ = "geo_zones"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(120), nullable=False)
+    zone_type = Column(String(50))
+    geometry = Column(JSONB)
+    center_lat = Column(Numeric(10, 7))
+    center_lon = Column(Numeric(10, 7))
+    created_by = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class InterviewerLocation(Base):
+    __tablename__ = "interviewer_locations"
+    id = Column(Integer, primary_key=True)
+    interviewer_id = Column(Integer, ForeignKey("interviewers.id"))
+    latitude = Column(Numeric(10, 7))
+    longitude = Column(Numeric(10, 7))
+    recorded_at = Column(DateTime, server_default=func.now())
+
+
+class AIRecommendation(Base):
+    __tablename__ = "ai_recommendations"
+    id = Column(Integer, primary_key=True)
+    survey_id = Column(Integer, ForeignKey("surveys.id", ondelete="CASCADE"))
+    recommendation_type = Column(String(50))
+    content = Column(Text)
+    metadata_json = Column("metadata", JSONB)
+    created_at = Column(DateTime, server_default=func.now())

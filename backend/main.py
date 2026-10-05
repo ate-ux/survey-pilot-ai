@@ -27,6 +27,8 @@ from routers import sampling as sampling_router
 from routers import knowledge as knowledge_router
 from routers import profile as profile_router
 from routers import ml as ml_router
+from routers import geo as geo_router
+from routers import llm as llm_router
 
 app = FastAPI(
     title=os.getenv("APP_NAME", "SurveyPilot AI"),
@@ -77,6 +79,8 @@ app.include_router(versions_router.router)
 app.include_router(sampling_router.router)
 app.include_router(knowledge_router.router)
 app.include_router(ml_router.router)
+app.include_router(geo_router.router)
+app.include_router(llm_router.router)
 
 
 @app.get("/")

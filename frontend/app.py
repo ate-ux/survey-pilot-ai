@@ -62,6 +62,8 @@ MODULES = [
     "Données & Anomalies (CAP)",
     "Analyse Statistique",
     "Machine Learning",
+    "Carte Interactive",
+    "Recommandations IA",
     "Sandbox",
     "Approbations",
     "Mon Profil",
@@ -144,6 +146,14 @@ def main():
     elif choix == "Machine Learning":
         from pages_impl import ml_page
         ml_page.render()
+
+    elif choix == "Carte Interactive":
+        from pages_impl import map_page
+        map_page.render()
+
+    elif choix == "Recommandations IA":
+        from pages_impl import llm_page
+        llm_page.render()
 
     elif choix == "Sandbox":
         from pages_impl import sandbox
